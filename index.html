@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Media Musik: Mengidentifikasi Irama & Melodi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelPink: '#FFB7B2',
+                        pastelPurple: '#C7CEEA',
+                        pastelBlue: '#B5EAD7',
+                        pastelYellow: '#E2F0CB',
+                        studioDark: '#2B1B54',
+                        stagePurple: '#4A2E80',
+                        accentPink: '#FF6B8B',
+                        accentYellow: '#FFD166',
+                        accentBlue: '#4CC9F0'
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif']
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'spin-slow': 'spin 8s linear infinite'
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 1, boxShadow: '0 0 15px rgba(255, 107, 139, 0.6)' },
+                            '50%': { opacity: 0.8, boxShadow: '0 0 30px rgba(76, 201, 240, 0.8)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Fredoka', 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1f1140 0%, #3a1c71 50%, #4a2e80 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            user-select: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1.25rem;
+        }
+
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 1.25rem;
+            color: #2D3748;
+        }
+
+        .tab-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #FF6B8B 0%, #FF8E53 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 139, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF6B8B;
+            border-radius: 4px;
+        }
+
+        .draggable-item {
+            cursor: grab;
+            touch-action: none;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone.hovered {
+            border-color: #FF6B8B !important;
+            background-color: rgba(255, 107, 139, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-100 overflow-x-hidden">
+
+    <!-- HEADER & NAVIGATION -->
+    <header class="sticky top-0 z-50 bg-studioDark/90 backdrop-blur-md border-b border-pink-500/30 px-4 py-3 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-yellow-400 flex items-center justify-center text-white text-2xl shadow-lg animate-bounce-slow">
+                    <i class="fa-solid fa-music"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-pink-400 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
+                        Harmoni SMP
+                    </h1>
+                    <p class="text-xs text-pink-200/80 font-poppins">E-Media Pembelajaran Irama & Melodi</p>
+                </div>
+            </div>
+
+            <!-- SPA Navigation Tabs -->
+            <nav class="flex flex-wrap justify-center gap-1.5 md:gap-2 bg-white/10 p-1.5 rounded-2xl border border-white/15 max-w-full overflow-x-auto">
+                <button onclick="switchTab('home')" id="tab-home" class="tab-btn active px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-house"></i> <span>Home</span>
+                </button>
+                <button onclick="switchTab('tujuan')" id="tab-tujuan" class="tab-btn px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-bullseye"></i> <span>Tujuan</span>
+                </button>
+                <button onclick="switchTab('materi')" id="tab-materi" class="tab-btn px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-book-open"></i> <span>Materi</span>
+                </button>
+                <button onclick="switchTab('kuis')" id="tab-kuis" class="tab-btn px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-gamepad"></i> <span>Kuis</span>
+                </button>
+                <button onclick="switchTab('dragdrop')" id="tab-dragdrop" class="tab-btn px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-puzzle-piece"></i> <span>Drag & Drop</span>
+                </button>
+                <button onclick="switchTab('tentang')" id="tab-tentang" class="tab-btn px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-user-gear"></i> <span>Tentang</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 relative">
+
+        <!-- 1. SECTION: HOME / BERANDA -->
+        <section id="sec-home" class="tab-content transition-all duration-300">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center min-h-[75vh]">
+                
+                <!-- Left Hero Banner Text -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500/20 border border-pink-400/30 text-pink-300 text-sm font-medium animate-pulse">
+                        <i class="fa-solid fa-sparkles"></i> Media Interaktif Seni Musik - Fase D (Kelas VIII)
+                    </div>
+                    
+                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
+                        Eksplorasi Dunia <br>
+                        <span class="bg-gradient-to-r from-yellow-300 via-pink-400 to-cyan-300 bg-clip-text text-transparent">
+                            Irama & Melodi Musik!
+                        </span>
+                    </h1>
+                    
+                    <p class="text-slate-200 text-base md:text-lg max-w-xl font-poppins leading-relaxed">
+                        Selamat datang di Studio Musik Interaktif! Mari belajar cara mendengar, membedakan, dan memainkan pola irama serta alunan melodi sederhana dengan menyenangkan.
+                    </p>
+
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
+                        <button onclick="switchTab('materi')" class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-lg shadow-lg hover:shadow-pink-500/50 hover:scale-105 transition duration-300 flex items-center gap-3">
+                            <i class="fa-solid fa-play"></i> Mulai Belajar Materi
+                        </button>
+                        <button onclick="switchTab('kuis')" class="px-7 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-lg hover:scale-105 transition duration-300 flex items-center gap-3">
+                            <i class="fa-solid fa-trophy text-yellow-400"></i> Uji Kemampuan
+                        </button>
+                    </div>
+
+                    <!-- Quick Highlight Cards -->
+                    <div class="grid grid-cols-3 gap-3 pt-6 max-w-lg mx-auto lg:mx-0">
+                        <div class="glass-card p-3 text-center rounded-xl">
+                            <i class="fa-solid fa-drum text-pink-400 text-2xl mb-1"></i>
+                            <div class="text-xs font-semibold">Simulasi Irama</div>
+                        </div>
+                        <div class="glass-card p-3 text-center rounded-xl">
+                            <i class="fa-solid fa-sliders text-cyan-400 text-2xl mb-1"></i>
+                            <div class="text-xs font-semibold">Virtual Piano</div>
+                        </div>
+                        <div class="glass-card p-3 text-center rounded-xl">
+                            <i class="fa-solid fa-gamepad text-yellow-400 text-2xl mb-1"></i>
+                            <div class="text-xs font-semibold">Game Musik</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Visual Musician Stage Banner -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="relative w-full max-w-md">
+                        <!-- Orbit Glow Background -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-3xl opacity-50 animate-pulse-glow"></div>
+                        
+                        <!-- Musician Card Frame -->
+                        <div class="glass-card p-8 rounded-3xl text-center relative z-10 border-2 border-pink-300/40 shadow-2xl">
+                            <!-- Animated Floating Music Notes -->
+                            <div class="absolute -top-6 -left-4 text-4xl text-yellow-300 animate-float"><i class="fa-solid fa-music"></i></div>
+                            <div class="absolute top-12 -right-6 text-3xl text-cyan-300 animate-float" style="animation-delay: 1s"><i class="fa-solid fa-note-sticky"></i></div>
+                            <div class="absolute -bottom-4 left-10 text-3xl text-pink-400 animate-float" style="animation-delay: 1.5s"><i class="fa-solid fa-guitar"></i></div>
+
+                            <div class="w-36 h-36 mx-auto rounded-full bg-gradient-to-tr from-purple-500 via-pink-400 to-yellow-300 p-1 mb-4 shadow-xl">
+                                <div class="w-full h-full rounded-full bg-studioDark flex items-center justify-center overflow-hidden">
+                                    <i class="fa-solid fa-user-astronaut text-6xl text-pink-300"></i>
+                                </div>
+                            </div>
+
+                            <h3 class="text-2xl font-bold text-white mb-1">Mari Bermusik!</h3>
+                            <p class="text-sm text-pink-200/90 font-poppins mb-4">"Musik adalah bahasa universal yang menyatukan irama detak jantung dan alunan jiwa."</p>
+                            
+                            <div class="p-3 bg-black/30 rounded-xl text-xs text-yellow-300 border border-yellow-400/20">
+                                <i class="fa-solid fa-headphones mr-1"></i> Gunakan Headset/Speaker untuk pengalaman audio interaktif terbaik!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. SECTION: TUJUAN PEMBELAJARAN -->
+        <section id="sec-tujuan" class="tab-content hidden transition-all duration-300">
+            <div class="max-w-4xl mx-auto space-y-6 py-4">
+                
+                <div class="text-center space-y-2">
+                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-cyan-300">
+                        <i class="fa-solid fa-bullseye text-pink-400 mr-2"></i> Capaian & Tujuan Pembelajaran
+                    </h2>
+                    <p class="text-sm text-slate-300 font-poppins">Kurikulum Merdeka - Seni Budaya (Seni Musik) Fase D Kelas VIII</p>
+                </div>
+
+                <!-- Capaian Pembelajaran Box -->
+                <div class="glass-card p-6 border-l-8 border-l-pink-500">
+                    <div class="flex items-center gap-3 text-pink-300 font-bold text-lg mb-2">
+                        <i class="fa-solid fa-graduation-cap text-2xl"></i> Capaian Pembelajaran (CP) Fase D
+                    </div>
+                    <p class="text-slate-100 font-poppins text-sm md:text-base leading-relaxed">
+                        Pada akhir Fase D, peserta didik mampu menyimak, mendokumentasikan, mengidentifikasi, dan merespons unsur-unsur musik secara kepekaan estetis, khususnya dalam <strong>mengidentifikasi unsur irama (ritme, birama, tempo)</strong> serta <strong>melodi (tangga nada, interval, kontur melodi)</strong> pada musik sederhana.
+                    </p>
+                </div>
+
+                <!-- Grid TP & Indikator -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Card TP -->
+                    <div class="glass-card-light p-6 shadow-xl relative overflow-hidden">
+                        <div class="w-12 h-12 rounded-xl bg-purple-600 text-white flex items-center justify-center text-xl font-bold mb-4 shadow-md">
+                            TP
+                        </div>
+                        <h3 class="text-xl font-bold text-purple-900 mb-3">Tujuan Pembelajaran</h3>
+                        <ul class="space-y-3 font-poppins text-sm text-slate-700">
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-check text-purple-600 mt-1"></i>
+                                <span>Peserta didik mampu <strong>mengidentifikasi unsur irama</strong> (ritme, pola ketukan, dan birama) pada lagu/musik sederhana.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-check text-purple-600 mt-1"></i>
+                                <span>Peserta didik mampu <strong>menganalisis susunan melodi</strong> (nada, tangga nada solfeggio, dan arah pergerakan melodi).</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-check text-purple-600 mt-1"></i>
+                                <span>Peserta didik dapat <strong>membedakan perbandingan bunyi irama dan melodi</strong> melalui media audio interaktif secara tepat.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Card Indikator -->
+                    <div class="glass-card-light p-6 shadow-xl relative overflow-hidden">
+                        <div class="w-12 h-12 rounded-xl bg-pink-500 text-white flex items-center justify-center text-xl font-bold mb-4 shadow-md">
+                            IKTP
+                        </div>
+                        <h3 class="text-xl font-bold text-pink-900 mb-3">Indikator Ketercapaian (IKTP)</h3>
+                        <ul class="space-y-3 font-poppins text-sm text-slate-700">
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-star text-pink-500 mt-1"></i>
+                                <span>Menjelaskan perbedaan mendasar antara irama dan melodi.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-star text-pink-500 mt-1"></i>
+                                <span>Mengenali tanda birama sederhana seperti 2/4, 3/4, dan 4/4.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-star text-pink-500 mt-1"></i>
+                                <span>Menyebutkan dan memainkan urutan tingkatan nada Solfeggio (Do-Re-Mi-Fa-Sol-La-Si-Do).</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-star text-pink-500 mt-1"></i>
+                                <span>Menyelesaikan tantangan kuis & permainan pengelompokan irama-melodi secara mandiri.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- Profile Target Banner -->
+                <div class="glass-card p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left bg-gradient-to-r from-purple-900/60 to-pink-900/60">
+                    <div class="flex items-center gap-4">
+                        <div class="text-4xl text-yellow-300"><i class="fa-solid fa-award"></i></div>
+                        <div>
+                            <h4 class="font-bold text-lg text-white">Profil Pelajar Pancasila</h4>
+                            <p class="text-xs text-slate-300 font-poppins">Bernalar Kritis, Kreatif, dan Mandiri dalam Mengapresiasi Seni Musik.</p>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('materi')" class="px-5 py-2.5 bg-yellow-400 text-slate-900 font-bold rounded-xl text-sm hover:bg-yellow-300 transition shadow">
+                        Lanjut ke Materi <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. SECTION: MATERI INTERAKTIF -->
+        <section id="sec-materi" class="tab-content hidden transition-all duration-300">
+            <div class="space-y-6">
+                
+                <!-- Inner Sub-Tabs for Materials -->
+                <div class="flex justify-center gap-2 border-b border-white/20 pb-4">
+                    <button onclick="switchMateriSubTab('irama')" id="subtab-irama" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-pink-500 text-white shadow hover:bg-pink-600 transition">
+                        <i class="fa-solid fa-drum mr-1"></i> 1. Concept & Irama
+                    </button>
+                    <button onclick="switchMateriSubTab('melodi')" id="subtab-melodi" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-slate-200 hover:bg-white/20 transition">
+                        <i class="fa-solid fa-music mr-1"></i> 2. Melodi & Solfeggio
+                    </button>
+                    <button onclick="switchMateriSubTab('virtual')" id="subtab-virtual" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-slate-200 hover:bg-white/20 transition">
+                        <i class="fa-solid fa-sliders mr-1"></i> 3. Studio Audio Interaktif
+                    </button>
+                </div>
+
+                <!-- SUB-CONTENT 1: IRAMA -->
+                <div id="materi-irama" class="materi-subcontent space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- Explanation Card -->
+                        <div class="glass-card p-6 space-y-4">
+                            <span class="px-3 py-1 bg-pink-500/30 text-pink-300 border border-pink-400/40 rounded-full text-xs font-semibold">
+                                Konsep Dasar
+                            </span>
+                            <h3 class="text-2xl font-bold text-yellow-300">Apa itu Irama (Ritme)?</h3>
+                            <p class="font-poppins text-slate-200 text-sm leading-relaxed">
+                                <strong>Irama (Ritme)</strong> adalah alunan bunyi yang teratur dan berulang dalam sebuah lagu. Irama terbentuk dari panjang pendeknya bunyi nada serta aksen ketukan. 
+                            </p>
+                            
+                            <div class="bg-black/30 p-4 rounded-xl space-y-2 border border-white/10">
+                                <h4 class="font-bold text-pink-300 text-sm"><i class="fa-solid fa-layer-group"></i> Unsur Pembentuk Irama:</h4>
+                                <ul class="text-xs font-poppins text-slate-300 space-y-2 list-disc pl-4">
+                                    <li><strong>Ketukan (Beat):</strong> Denyut teratur dalam musik (seperti detak jantung).</li>
+                                    <li><strong>Birama:</strong> Pembagian kelompok ketukan tetap (Contoh: 2/4, 3/4, 4/4).</li>
+                                    <li><strong>Tempo:</strong> Cepat atau lambatnya laju ketukan musik (Lento, Moderato, Allegro).</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Beat Synthesizer Simulator -->
+                        <div class="glass-card p-6 flex flex-col justify-between border-2 border-cyan-400/30">
+                            <div>
+                                <h3 class="text-xl font-bold text-cyan-300 mb-2">
+                                    <i class="fa-solid fa-headphones text-yellow-300"></i> Simulator Birama Interaktif
+                                </h3>
+                                <p class="text-xs text-slate-300 font-poppins mb-4">
+                                    Klik tombol di bawah untuk mendengarkan pola ketukan birama secara langsung!
+                                </p>
+
+                                <div class="space-y-3">
+                                    <!-- Birama 2/4 Button -->
+                                    <div class="flex items-center justify-between p-3 bg-white/10 rounded-xl hover:bg-white/15">
+                                        <div>
+                                            <div class="font-bold text-pink-300">Birama 2/4 (2 Ketukan)</div>
+                                            <div class="text-xs text-slate-400">Contoh: Lagu Marching / Senam (TU-wa, TU-wa)</div>
+                                        </div>
+                                        <button onclick="playBeatPattern(2)" class="px-4 py-2 bg-pink-500 hover:bg-pink-600 rounded-lg text-xs font-bold shadow">
+                                            <i class="fa-solid fa-play mr-1"></i> Putar 2/4
+                                        </button>
+                                    </div>
+
+                                    <!-- Birama 3/4 Button -->
+                                    <div class="flex items-center justify-between p-3 bg-white/10 rounded-xl hover:bg-white/15">
+                                        <div>
+                                            <div class="font-bold text-yellow-300">Birama 3/4 (3 Ketukan)</div>
+                                            <div class="text-xs text-slate-400">Contoh: Tarian Waltz / Burung Kakatua (TU-wa-ga)</div>
+                                        </div>
+                                        <button onclick="playBeatPattern(3)" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-slate-900 rounded-lg text-xs font-bold shadow">
+                                            <i class="fa-solid fa-play mr-1"></i> Putar 3/4
+                                        </button>
+                                    </div>
+
+                                    <!-- Birama 4/4 Button -->
+                                    <div class="flex items-center justify-between p-3 bg-white/10 rounded-xl hover:bg-white/15">
+                                        <div>
+                                            <div class="font-bold text-cyan-300">Birama 4/4 (4 Ketukan)</div>
+                                            <div class="text-xs text-slate-400">Contoh: Lagu Pop Kebanyakan (TU-wa-ga-pat)</div>
+                                        </div>
+                                        <button onclick="playBeatPattern(4)" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-slate-900 rounded-lg text-xs font-bold shadow">
+                                            <i class="fa-solid fa-play mr-1"></i> Putar 4/4
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="beat-visualizer" class="mt-4 p-3 bg-black/40 rounded-xl text-center text-xs text-pink-300 font-mono">
+                                Visualisasi Ketukan: <span id="beat-status">Siap diputar</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SUB-CONTENT 2: MELODI -->
+                <div id="materi-melodi" class="materi-subcontent hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- Explanation Card -->
+                        <div class="glass-card p-6 space-y-4">
+                            <span class="px-3 py-1 bg-purple-500/30 text-purple-300 border border-purple-400/40 rounded-full text-xs font-semibold">
+                                Elemen Nada
+                            </span>
+                            <h3 class="text-2xl font-bold text-pink-300">Apa itu Melodi?</h3>
+                            <p class="font-poppins text-slate-200 text-sm leading-relaxed">
+                                <strong>Melodi</strong> adalah susunan tinggi-rendahnya nada yang diatur secara berurutan sehingga membentuk alunan musik yang indah dan mudah diingat. Jika irama adalah "kerangka", maka melodi adalah "jiwa" dari musik.
+                            </p>
+
+                            <div class="bg-black/30 p-4 rounded-xl space-y-2 border border-white/10">
+                                <h4 class="font-bold text-yellow-300 text-sm"><i class="fa-solid fa-music"></i> Istilah Kunci Melodi:</h4>
+                                <ul class="text-xs font-poppins text-slate-300 space-y-2 list-disc pl-4">
+                                    <li><strong>Nada:</strong> Bunyi yang memiliki frekuensi teratur.</li>
+                                    <li><strong>Solfeggio:</strong> Sistem membaca nada dengan suku kata: <em>Do, Re, Mi, Fa, Sol, La, Si, Do'</em>.</li>
+                                    <li><strong>Kontur Melodi:</strong> Arah naik-turunnya alunan nada (Naik, Turun, Landai/Mendatar).</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Visual Contour Card -->
+                        <div class="glass-card p-6 space-y-4 border-2 border-yellow-400/30">
+                            <h3 class="text-xl font-bold text-yellow-300">
+                                <i class="fa-solid fa-chart-line"></i> Arah Pergerakan Melodi (Kontur)
+                            </h3>
+                            <p class="text-xs text-slate-300 font-poppins">
+                                Cobalah lihat bagaimana tinggi nada bergerak dalam sebuah baris lagu:
+                            </p>
+
+                            <div class="space-y-3 font-poppins text-xs">
+                                <div class="p-3 bg-white/10 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-emerald-300">1. Melodi Naik <i class="fa-solid fa-arrow-trend-up"></i></div>
+                                        <div class="text-slate-300 text-[11px]">Nada bergerak dari rendah ke tinggi (Do -> Mi -> Sol)</div>
+                                    </div>
+                                    <button onclick="playNoteSequence(['C4','E4','G4'])" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 rounded text-white font-bold">Dengar</button>
+                                </div>
+
+                                <div class="p-3 bg-white/10 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-pink-300">2. Melodi Turun <i class="fa-solid fa-arrow-trend-down"></i></div>
+                                        <div class="text-slate-300 text-[11px]">Nada bergerak dari tinggi ke rendah (Sol -> Mi -> Do)</div>
+                                    </div>
+                                    <button onclick="playNoteSequence(['G4','E4','C4'])" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 rounded text-white font-bold">Dengar</button>
+                                </div>
+
+                                <div class="p-3 bg-white/10 rounded-xl flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-cyan-300">3. Melodi Mendatar / Berulang <i class="fa-solid fa-arrow-right"></i></div>
+                                        <div class="text-slate-300 text-[11px]">Nada tetap pada ketinggian yang sama (Sol -> Sol -> Sol)</div>
+                                    </div>
+                                    <button onclick="playNoteSequence(['G4','G4','G4'])" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 rounded text-slate-900 font-bold">Dengar</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SUB-CONTENT 3: VIRTUAL INSTRUMENT STUDIO -->
+                <div id="materi-virtual" class="materi-subcontent hidden space-y-6">
+                    <div class="glass-card p-6 text-center space-y-4 max-w-3xl mx-auto">
+                        <h3 class="text-2xl font-bold text-yellow-300">
+                            <i class="fa-solid fa-record-vinyl text-pink-400"></i> Studio Xylophone / Piano Solfeggio
+                        </h3>
+                        <p class="text-xs md:text-sm text-slate-200 font-poppins">
+                            Tekan tombol bilah musik di bawah ini untuk mendengar dan membunyikan tangga nada Solfeggio!
+                        </p>
+
+                        <!-- Virtual Keyboard Keys Container -->
+                        <div class="grid grid-cols-4 md:grid-cols-8 gap-2 md:gap-3 py-6">
+                            <!-- Do -->
+                            <button onclick="playSynthTone('C4', 'Do')" class="group p-4 rounded-2xl bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-red-900">
+                                <span class="text-xs font-bold text-white/80">1</span>
+                                <span class="text-2xl font-extrabold text-white group-hover:scale-110 transition">Do</span>
+                                <span class="text-[10px] text-red-200">C4</span>
+                            </button>
+
+                            <!-- Re -->
+                            <button onclick="playSynthTone('D4', 'Re')" class="group p-4 rounded-2xl bg-gradient-to-b from-orange-500 to-orange-700 hover:from-orange-400 hover:to-orange-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-orange-900">
+                                <span class="text-xs font-bold text-white/80">2</span>
+                                <span class="text-2xl font-extrabold text-white group-hover:scale-110 transition">Re</span>
+                                <span class="text-[10px] text-orange-200">D4</span>
+                            </button>
+
+                            <!-- Mi -->
+                            <button onclick="playSynthTone('E4', 'Mi')" class="group p-4 rounded-2xl bg-gradient-to-b from-yellow-500 to-yellow-700 hover:from-yellow-400 hover:to-yellow-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-yellow-900">
+                                <span class="text-xs font-bold text-white/80">3</span>
+                                <span class="text-2xl font-extrabold text-slate-900 group-hover:scale-110 transition">Mi</span>
+                                <span class="text-[10px] text-yellow-200">E4</span>
+                            </button>
+
+                            <!-- Fa -->
+                            <button onclick="playSynthTone('F4', 'Fa')" class="group p-4 rounded-2xl bg-gradient-to-b from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-emerald-900">
+                                <span class="text-xs font-bold text-white/80">4</span>
+                                <span class="text-2xl font-extrabold text-white group-hover:scale-110 transition">Fa</span>
+                                <span class="text-[10px] text-emerald-200">F4</span>
+                            </button>
+
+                            <!-- Sol -->
+                            <button onclick="playSynthTone('G4', 'Sol')" class="group p-4 rounded-2xl bg-gradient-to-b from-cyan-500 to-cyan-700 hover:from-cyan-400 hover:to-cyan-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-cyan-900">
+                                <span class="text-xs font-bold text-white/80">5</span>
+                                <span class="text-2xl font-extrabold text-white group-hover:scale-110 transition">Sol</span>
+                                <span class="text-[10px] text-cyan-200">G4</span>
+                            </button>
+
+                            <!-- La -->
+                            <button onclick="playSynthTone('A4', 'La')" class="group p-4 rounded-2xl bg-gradient-to-b from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-blue-900">
+                                <span class="text-xs font-bold text-white/80">6</span>
+                                <span class="text-2xl font-extrabold text-white group-hover:scale-110 transition">La</span>
+                                <span class="text-[10px] text-blue-200">A4</span>
+                            </button>
+
+                            <!-- Si -->
+                            <button onclick="playSynthTone('B4', 'Si')" class="group p-4 rounded-2xl bg-gradient-to-b from-purple-500 to-purple-700 hover:from-purple-400 hover:to-purple-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-purple-900">
+                                <span class="text-xs font-bold text-white/80">7</span>
+                                <span class="text-2xl font-extrabold text-white group-hover:scale-110 transition">Si</span>
+                                <span class="text-[10px] text-purple-200">B4</span>
+                            </button>
+
+                            <!-- Do High -->
+                            <button onclick="playSynthTone('C5', 'Do (Tinggi)')" class="group p-4 rounded-2xl bg-gradient-to-b from-pink-500 to-pink-700 hover:from-pink-400 hover:to-pink-600 shadow-lg active:scale-95 transition flex flex-col items-center justify-between h-36 border-b-4 border-pink-900">
+                                <span class="text-xs font-bold text-white/80">1'</span>
+                                <span class="text-2xl font-extrabold text-white group-hover:scale-110 transition">Do'</span>
+                                <span class="text-[10px] text-pink-200">C5</span>
+                            </button>
+                        </div>
+
+                        <!-- Play Scale Preset Button -->
+                        <div class="flex justify-center gap-3">
+                            <button onclick="playSolfeggioScale()" class="px-6 py-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold rounded-xl text-sm shadow hover:scale-105 transition">
+                                <i class="fa-solid fa-play-circle mr-1"></i> Putar Tangga Nada Solfeggio Lurus
+                            </button>
+                        </div>
+
+                        <div class="p-3 bg-black/40 rounded-xl text-xs text-cyan-300 font-mono">
+                            Nada Aktif: <span id="piano-active-note" class="font-bold text-yellow-300">- Belum ada -</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 4. SECTION: KUIS INTERAKTIF -->
+        <section id="sec-kuis" class="tab-content hidden transition-all duration-300">
+            <div class="max-w-3xl mx-auto space-y-6">
+                
+                <!-- Quiz Header -->
+                <div class="text-center space-y-2">
+                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-yellow-300">
+                        <i class="fa-solid fa-gamepad text-pink-400 mr-2"></i> Kuis Interaktif Irama & Melodi
+                    </h2>
+                    <p class="text-xs md:text-sm text-slate-300 font-poppins">Uji pemahamanmu dengan menjawab 5 soal pilihan ganda berikut!</p>
+                </div>
+
+                <!-- Quiz Card Container -->
+                <div id="quiz-box" class="glass-card p-6 md:p-8 space-y-6 relative border-2 border-pink-400/30">
+                    
+                    <!-- Progress Bar & Question Counter -->
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-300 border-b border-white/10 pb-3">
+                        <span id="quiz-progress-text">Soal 1 dari 5</span>
+                        <div class="w-36 h-2.5 bg-black/40 rounded-full overflow-hidden">
+                            <div id="quiz-progress-bar" class="h-full bg-gradient-to-r from-pink-500 to-yellow-400 w-1/5 transition-all duration-300"></div>
+                        </div>
+                    </div>
+
+                    <!-- Question Text -->
+                    <div class="space-y-3">
+                        <h3 id="quiz-question" class="text-lg md:text-xl font-bold text-white leading-relaxed">
+                            Loading pertanyaan...
+                        </h3>
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div id="quiz-options" class="grid grid-cols-1 gap-3">
+                        <!-- Dynamic Options Loaded via JS -->
+                    </div>
+
+                    <!-- Feedback Box -->
+                    <div id="quiz-feedback" class="hidden p-4 rounded-xl text-sm font-poppins font-semibold text-center border"></div>
+
+                    <!-- Footer Action Buttons -->
+                    <div class="flex justify-end pt-2">
+                        <button id="btn-next-quiz" onclick="nextQuestion()" class="hidden px-6 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 font-bold rounded-xl text-sm hover:scale-105 transition shadow">
+                            Soal Selanjutnya <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quiz Result Screen (Hidden by default) -->
+                <div id="quiz-result" class="hidden glass-card p-8 text-center space-y-6">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-yellow-400/20 text-yellow-300 flex items-center justify-center text-5xl animate-bounce">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+
+                    <h3 class="text-3xl font-extrabold text-white">Hasil Kuis Kamu!</h3>
+                    
+                    <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-400" id="quiz-score-display">
+                        0 / 100
+                    </div>
+
+                    <p id="quiz-message" class="text-sm font-poppins text-slate-200 max-w-md mx-auto">
+                        Pesan evaluasi kuis...
+                    </p>
+
+                    <div class="pt-4 flex justify-center gap-4">
+                        <button onclick="restartQuiz()" class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 font-bold rounded-xl text-sm hover:scale-105 transition shadow">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> Coba Lagi
+                        </button>
+                        <button onclick="switchTab('dragdrop')" class="px-6 py-3 bg-white/10 hover:bg-white/20 font-bold rounded-xl text-sm transition">
+                            Main Drag & Drop <i class="fa-solid fa-puzzle-piece ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 5. SECTION: DRAG AND DROP GAME -->
+        <section id="sec-dragdrop" class="tab-content hidden transition-all duration-300">
+            <div class="max-w-4xl mx-auto space-y-6">
+                
+                <div class="text-center space-y-2">
+                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-pink-400 to-yellow-300">
+                        <i class="fa-solid fa-puzzle-piece text-cyan-300 mr-2"></i> Game Kelompokkan Istilah Musik
+                    </h2>
+                    <p class="text-xs md:text-sm text-slate-300 font-poppins">
+                        Tarik (drag) atau klik item istilah di bawah, lalu masukkan ke dalam kotak kategori <strong>IRAMA</strong> atau <strong>MELODI</strong> yang sesuai!
+                    </p>
+                </div>
+
+                <!-- Game Container -->
+                <div class="glass-card p-6 md:p-8 space-y-6 border-2 border-cyan-400/30">
+                    
+                    <!-- Draggable Items Pool -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-yellow-300">
+                            <i class="fa-solid fa-hand-pointer mr-1"></i> Pilihan Istilah (Klik / Tarik Item):
+                        </h4>
+                        <div id="drag-items-pool" class="flex flex-wrap gap-2.5 p-4 bg-black/30 rounded-2xl min-h-[90px] border border-white/10 items-center">
+                            <!-- Items injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Drop Zones Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                        
+                        <!-- Zone 1: IRAMA -->
+                        <div id="zone-irama" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dropItem(event, 'IRAMA')" class="drop-zone glass-card p-5 border-2 border-dashed border-pink-400/50 rounded-2xl min-h-[220px] transition space-y-3">
+                            <div class="flex items-center gap-2 text-pink-300 font-bold text-lg border-b border-pink-400/30 pb-2">
+                                <i class="fa-solid fa-drum text-2xl"></i> Kategori: IRAMA (RITME)
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-poppins">Tanda Birama, Tempo, Ketukan, Aksentuasi...</p>
+                            <div class="dropped-list flex flex-wrap gap-2 pt-2"></div>
+                        </div>
+
+                        <!-- Zone 2: MELODI -->
+                        <div id="zone-melodi" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondrop="dropItem(event, 'MELODI')" class="drop-zone glass-card p-5 border-2 border-dashed border-cyan-400/50 rounded-2xl min-h-[220px] transition space-y-3">
+                            <div class="flex items-center gap-2 text-cyan-300 font-bold text-lg border-b border-cyan-400/30 pb-2">
+                                <i class="fa-solid fa-music text-2xl"></i> Kategori: MELODI
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-poppins">Solfeggio, Nada, Kontur, Tangga Nada...</p>
+                            <div class="dropped-list flex flex-wrap gap-2 pt-2"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/10">
+                        <button onclick="resetDragGame()" class="px-5 py-2 bg-white/10 hover:bg-white/20 text-slate-200 rounded-xl font-bold text-sm transition">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reset Game
+                        </button>
+
+                        <button onclick="checkDragGameResult()" class="px-7 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-900 font-extrabold rounded-xl text-sm hover:scale-105 transition shadow-lg">
+                            <i class="fa-solid fa-check-circle mr-1"></i> Periksa Jawaban
+                        </button>
+                    </div>
+
+                    <!-- Game Feedback Modal Alert -->
+                    <div id="drag-game-feedback" class="hidden p-4 rounded-xl text-center font-poppins font-bold text-sm"></div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 6. SECTION: TENTANG PENGEMBANG -->
+        <section id="sec-tentang" class="tab-content hidden transition-all duration-300">
+            <div class="max-w-3xl mx-auto space-y-6 py-4">
+                
+                <div class="glass-card p-8 rounded-3xl text-center relative overflow-hidden border-2 border-pink-400/30 shadow-2xl space-y-6">
+                    
+                    <!-- Decorative Background Stars -->
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-pink-500/20 rounded-full blur-2xl"></div>
+                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500/20 rounded-full blur-2xl"></div>
+
+                    <!-- Developer Avatar -->
+                    <div class="relative z-10">
+                        <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-yellow-300 p-1.5 shadow-xl">
+                            <div class="w-full h-full rounded-full bg-studioDark flex items-center justify-center overflow-hidden">
+                                <i class="fa-solid fa-user-graduate text-5xl text-yellow-300"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Details -->
+                    <div class="space-y-2 relative z-10">
+                        <span class="px-4 py-1.5 rounded-full bg-pink-500/20 border border-pink-400/30 text-pink-300 text-xs font-semibold">
+                            Pengembang Media Pembelajaran
+                        </span>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-white">
+                            Nurul Yulinar Dwinta M.IKom
+                        </h2>
+                        <p class="text-sm text-yellow-300 font-medium">
+                            Guru / Pendidik Seni Budaya & Media Komunikasi Edukasi
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left font-poppins text-xs md:text-sm text-slate-200 relative z-10 pt-2">
+                        <div class="p-4 bg-black/30 rounded-xl space-y-1.5 border border-white/10">
+                            <div class="text-pink-300 font-bold"><i class="fa-solid fa-book-bookmark mr-1"></i> Mata Pelajaran</div>
+                            <div>Seni Budaya (Seni Musik)</div>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-xl space-y-1.5 border border-white/10">
+                            <div class="text-cyan-300 font-bold"><i class="fa-solid fa-users mr-1"></i> Sasaran Siswa</div>
+                            <div>SMP Kelas VIII (Fase D)</div>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-xl space-y-1.5 border border-white/10">
+                            <div class="text-yellow-300 font-bold"><i class="fa-solid fa-compact-disc mr-1"></i> Topik Pembelajaran</div>
+                            <div>Mengidentifikasi Irama & Melodi Sederhana</div>
+                        </div>
+                        <div class="p-4 bg-black/30 rounded-xl space-y-1.5 border border-white/10">
+                            <div class="text-purple-300 font-bold"><i class="fa-solid fa-code mr-1"></i> Teknologi Website</div>
+                            <div>HTML5, Tailwind CSS, Vanilla JS, Web Audio API</div>
+                        </div>
+                    </div>
+
+                    <!-- Teacher Instruction Note -->
+                    <div class="p-4 bg-pink-500/10 rounded-2xl border border-pink-400/30 text-xs text-pink-200 text-left font-poppins leading-relaxed">
+                        <i class="fa-solid fa-circle-info text-pink-400 text-base mr-1"></i>
+                        <strong>Catatan Penggunaan Guru:</strong> Media pembelajaran interaktif ini dirancang tanpa memerlukan reload halaman web (Single Page Application). Seluruh efek suara diproduksi secara langsung melalui *Web Audio API* sehingga aman digunakan secara offline atau dengan koneksi internet terbatas di ruang kelas.
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-studioDark border-t border-white/10 py-4 text-center text-xs text-slate-400 font-poppins mt-8">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2">
+            <div>
+                &copy; 2026 E-Media Musik SMP - Developed by <span class="text-pink-300 font-semibold">Nurul Yulinar Dwinta M.IKom</span>
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span><i class="fa-solid fa-music text-pink-400"></i> Fase D Kelas VIII</span>
+                <span><i class="fa-solid fa-heart text-red-400"></i> Seni Musik</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        
+        // -------------------------------------------------------------
+        // WEB AUDIO API SYNTHESIZER (No external MP3 files needed!)
+        // -------------------------------------------------------------
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Frequencies for Solfeggio Scale
+        const noteFrequencies = {
+            'C4': 261.63, // Do
+            'D4': 293.66, // Re
+            'E4': 329.63, // Mi
+            'F4': 349.23, // Fa
+            'G4': 392.00, // Sol
+            'A4': 440.00, // La
+            'B4': 493.88, // Si
+            'C5': 523.25  // Do High
+        };
+
+        // Play a single note tone with natural envelope decay
+        function playSynthTone(note, noteName = '') {
+            try {
+                const ctx = getAudioContext();
+                const freq = noteFrequencies[note] || 440;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle'; // Warm marimba/piano-like tone
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+
+                // Update visual note display if provided
+                const label = document.getElementById('piano-active-note');
+                if (label && noteName) {
+                    label.innerText = `${noteName} (${note})`;
+                }
+            } catch(e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        // Play sequence of notes (for contour learning)
+        function playNoteSequence(notesArray) {
+            notesArray.forEach((note, index) => {
+                setTimeout(() => {
+                    playSynthTone(note);
+                }, index * 400);
+            });
+        }
+
+        // Play full Solfeggio scale ascending
+        function playSolfeggioScale() {
+            const scale = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+            scale.forEach((note, idx) => {
+                setTimeout(() => {
+                    playSynthTone(note);
+                }, idx * 350);
+            });
+        }
+
+        // Play Percussion Beat Simulation for Rhythm Birama
+        let beatInterval = null;
+        function playBeatPattern(beats) {
+            if (beatInterval) clearInterval(beatInterval);
+            
+            const ctx = getAudioContext();
+            let count = 1;
+            const statusEl = document.getElementById('beat-status');
+
+            statusEl.innerText = `Memutar Birama ${beats}/4 (Ketukan: ${count})`;
+
+            const triggerBeat = () => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                // Accent high pitch for beat 1 (TU), low pitch for other beats (wa/ga/pat)
+                const isFirstBeat = (count === 1);
+                osc.type = isFirstBeat ? 'sine' : 'square';
+                osc.frequency.setValueAtTime(isFirstBeat ? 800 : 350, ctx.currentTime);
+
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+
+                statusEl.innerText = `Birama ${beats}/4 -> [ ${count} ]`;
+
+                count++;
+                if (count > beats) count = 1;
+            };
+
+            triggerBeat();
+            beatInterval = setInterval(triggerBeat, 600); // 100 BPM
+
+            // Stop after 3 full measures
+            setTimeout(() => {
+                clearInterval(beatInterval);
+                statusEl.innerText = `Selesai memutar Birama ${beats}/4`;
+            }, beats * 600 * 3);
+        }
+
+
+        
+        // -------------------------------------------------------------
+        // SPA TAB SWITCHING
+        // -------------------------------------------------------------
+        function switchTab(tabId) {
+            // Hide all section contents
+            const sections = document.querySelectorAll('.tab-content');
+            sections.forEach(sec => sec.classList.add('hidden'));
+
+            // Remove active class from all tab buttons
+            const navButtons = document.querySelectorAll('.tab-btn');
+            navButtons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected section
+            const targetSection = document.getElementById(`sec-${tabId}`);
+            if (targetSection) targetSection.classList.remove('hidden');
+
+            // Set button active
+            const targetButton = document.getElementById(`tab-${tabId}`);
+            if (targetButton) targetButton.classList.add('active');
+
+            // Scroll top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Sub-tabs in Materi
+        function switchMateriSubTab(subId) {
+            const subs = document.querySelectorAll('.materi-subcontent');
+            subs.forEach(s => s.classList.add('hidden'));
+
+            const target = document.getElementById(`materi-${subId}`);
+            if (target) target.classList.remove('hidden');
+
+            const btnIrama = document.getElementById('subtab-irama');
+            const btnMelodi = document.getElementById('subtab-melodi');
+            const btnVirtual = document.getElementById('subtab-virtual');
+
+            // Reset styles
+            [btnIrama, btnMelodi, btnVirtual].forEach(b => {
+                if(b) {
+                    b.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-white/10 text-slate-200 hover:bg-white/20 transition";
+                }
+            });
+
+            // Highlight active subtab
+            const activeBtn = document.getElementById(`subtab-${subId}`);
+            if (activeBtn) {
+                activeBtn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-pink-500 text-white shadow hover:bg-pink-600 transition";
+            }
+        }
+
+
+        
+        // -------------------------------------------------------------
+        // KUIS INTERAKTIF DATA & LOGIC
+        // -------------------------------------------------------------
+        const quizData = [
+            {
+                question: "Alunan bunyi teratur dan berulang yang membentuk kelompok ketukan dalam musik disebut...",
+                options: ["Melodi", "Irama (Ritme)", "Solfeggio", "Harmoni"],
+                correct: 1,
+                explanation: "Irama (Ritme) adalah alunan bunyi yang teratur dan berulang dalam rentang waktu tertentu."
+            },
+            {
+                question: "Susunan tinggi-rendahnya nada yang diatur secara berurutan dalam lagu disebut...",
+                options: ["Aksen", "Birama", "Melodi", "Tempo"],
+                correct: 2,
+                explanation: "Melodi merupakan susunan pitch atau tinggi-rendahnya nada yang membentuk lagu."
+            },
+            {
+                question: "Suku kata pembacaan tangga nada: Do - Re - Mi - Fa - Sol - La - Si - Do' dikenal dengan istilah...",
+                options: ["Solfeggio", "Birama 4/4", "Tempo Lento", "Akor Major"],
+                correct: 0,
+                explanation: "Solfeggio adalah metode menyanyikan atau membaca solmisasi nada."
+            },
+            {
+                question: "Lagu dengan pola ketukan 'TU-wa-ga, TU-wa-ga' (3 ketukan dalam setiap bar) menggunakan tanda birama...",
+                options: ["2/4", "3/4", "4/4", "6/8"],
+                correct: 1,
+                explanation: "Birama 3/4 memiliki 3 ketukan dalam setiap ruas birama."
+            },
+            {
+                question: "Arah pergerakan melodi dari nada Sol (5) turun ke Mi (3) lalu ke Do (1) disebut kontur melodi...",
+                options: ["Naik", "Mendatar", "Turun", "Acak"],
+                correct: 2,
+                explanation: "Karena pitch bergerak dari yang lebih tinggi (Sol) ke lebih rendah (Do), maka konturnya adalah Melodi Turun."
+            }
+        ];
+
+        let currentQuestionIdx = 0;
+        let userScore = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const q = quizData[currentQuestionIdx];
+
+            document.getElementById('quiz-progress-text').innerText = `Soal ${currentQuestionIdx + 1} dari ${quizData.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIdx + 1) / quizData.length) * 100}%`;
+
+            document.getElementById('quiz-question').innerText = q.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            const feedbackEl = document.getElementById('quiz-feedback');
+            feedbackEl.classList.add('hidden');
+            document.getElementById('btn-next-quiz').classList.add('hidden');
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-poppins text-sm md:text-base font-semibold transition flex items-center justify-between";
+                btn.innerHTML = `<span>${String.fromCharCode(65 + idx)}. ${opt}</span> <i class="fa-regular fa-circle text-slate-400"></i>`;
+                btn.onclick = () => selectQuizOption(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectQuizOption(selectedIdx, btnElement) {
+            if (answered) return;
+            answered = true;
+
+            const q = quizData[currentQuestionIdx];
+            const feedbackEl = document.getElementById('quiz-feedback');
+
+            // Play audio feedback
+            const ctx = getAudioContext();
+
+            if (selectedIdx === q.correct) {
+                userScore += 20;
+                btnElement.className = "w-full text-left p-4 rounded-xl bg-emerald-500/80 border-2 border-emerald-300 text-white font-poppins font-semibold flex items-center justify-between";
+                btnElement.querySelector('i').className = "fa-solid fa-circle-check text-white text-xl";
+                
+                feedbackEl.className = "p-4 rounded-xl text-sm font-poppins font-semibold text-center bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+                feedbackEl.innerHTML = `<i class="fa-solid fa-face-smile mr-1"></i> Benar! ${q.explanation}`;
+
+                // Play correct sound chime
+                playSynthTone('C5');
+                setTimeout(() => playSynthTone('G4'), 150);
+            } else {
+                btnElement.className = "w-full text-left p-4 rounded-xl bg-red-500/80 border-2 border-red-300 text-white font-poppins font-semibold flex items-center justify-between";
+                btnElement.querySelector('i').className = "fa-solid fa-circle-xmark text-white text-xl";
+
+                feedbackEl.className = "p-4 rounded-xl text-sm font-poppins font-semibold text-center bg-red-500/20 text-red-300 border border-red-500/40";
+                feedbackEl.innerHTML = `<i class="fa-solid fa-face-frown mr-1"></i> Kurang Tepat. ${q.explanation}`;
+
+                // Play wrong sound
+                playSynthTone('C4');
+            }
+
+            feedbackEl.classList.remove('hidden');
+            document.getElementById('btn-next-quiz').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIdx++;
+            if (currentQuestionIdx < quizData.length) {
+                loadQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function showQuizResults() {
+            document.getElementById('quiz-box').classList.add('hidden');
+            const resultBox = document.getElementById('quiz-result');
+            resultBox.classList.remove('hidden');
+
+            document.getElementById('quiz-score-display').innerText = `${userScore} / 100`;
+
+            const msgEl = document.getElementById('quiz-message');
+            if (userScore === 100) {
+                msgEl.innerText = "Luar biasa! Kamu adalah Musisi Cilik Sejati! Kamu telah menguasai konsep Irama dan Melodi dengan sempurna!";
+            } else if (userScore >= 60) {
+                msgEl.innerText = "Bagus sekali! Pemahamanmu tentang Irama dan Melodi sudah sangat baik. Teruskan berlatih!";
+            } else {
+                msgEl.innerText = "Jangan berkecil hati! Ulangi membaca materi dan coba simulasikan kembali instrumen audio di tab Materi.";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIdx = 0;
+            userScore = 0;
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-box').classList.remove('hidden');
+            loadQuestion();
+        }
+
+
+        
+        // -------------------------------------------------------------
+        // DRAG AND DROP GAME DATA & LOGIC
+        // -------------------------------------------------------------
+        const dragItemsData = [
+            { id: 'item1', text: 'Tanda Birama (2/4, 3/4)', category: 'IRAMA' },
+            { id: 'item2', text: 'Solfeggio (Do-Re-Mi)', category: 'MELODI' },
+            { id: 'item3', text: 'Tempo Laju Musik', category: 'IRAMA' },
+            { id: 'item4', text: 'Tinggi Rendah Nada', category: 'MELODI' },
+            { id: 'item5', text: 'Denyut Ketukan (Beat)', category: 'IRAMA' },
+            { id: 'item6', text: 'Kontur Naik-Turun Nada', category: 'MELODI' }
+        ];
+
+        let selectedTouchItem = null; // Fallback touch click handler
+
+        function initDragGame() {
+            const pool = document.getElementById('drag-items-pool');
+            pool.innerHTML = '';
+
+            document.querySelectorAll('.dropped-list').forEach(el => el.innerHTML = '');
+            document.getElementById('drag-game-feedback').classList.add('hidden');
+
+            // Shuffle items
+            const shuffled = [...dragItemsData].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(item => {
+                const el = document.createElement('div');
+                el.id = item.id;
+                el.dataset.category = item.category;
+                el.setAttribute('draggable', 'true');
+                el.className = "draggable-item px-3.5 py-2 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-poppins font-semibold text-xs md:text-sm shadow border border-pink-300/30 transition flex items-center gap-2 cursor-pointer";
+                el.innerHTML = `<i class="fa-solid fa-grip-vertical text-pink-200"></i> <span>${item.text}</span>`;
+
+                // Drag Event Listeners
+                el.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', item.id);
+                };
+
+                // Touch / Click fallback for mobile responsiveness
+                el.onclick = () => {
+                    if (selectedTouchItem) {
+                        selectedTouchItem.classList.remove('ring-4', 'ring-yellow-300');
+                    }
+                    selectedTouchItem = el;
+                    el.classList.add('ring-4', 'ring-yellow-300');
+                };
+
+                pool.appendChild(el);
+            });
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function dragEnter(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('hovered');
+        }
+
+        function dragLeave(e) {
+            e.currentTarget.classList.remove('hovered');
+        }
+
+        function dropItem(e, targetCategory) {
+            e.preventDefault();
+            const zone = e.currentTarget;
+            zone.classList.remove('hovered');
+
+            let itemId = e.dataTransfer ? e.dataTransfer.getData('text/plain') : null;
+            
+            if (!itemId && selectedTouchItem) {
+                itemId = selectedTouchItem.id;
+                selectedTouchItem.classList.remove('ring-4', 'ring-yellow-300');
+                selectedTouchItem = null;
+            }
+
+            if (itemId) {
+                const draggedEl = document.getElementById(itemId);
+                if (draggedEl) {
+                    const droppedList = zone.querySelector('.dropped-list');
+                    droppedList.appendChild(draggedEl);
+                }
+            }
+        }
+
+        // Handle click directly on drop zones for mobile accessibility
+        document.addEventListener('DOMContentLoaded', () => {
+            const zoneIrama = document.getElementById('zone-irama');
+            const zoneMelodi = document.getElementById('zone-melodi');
+
+            if (zoneIrama) {
+                zoneIrama.onclick = (e) => {
+                    if (selectedTouchItem && !e.target.classList.contains('draggable-item')) {
+                        dropItem(e, 'IRAMA');
+                    }
+                }
+            }
+            if (zoneMelodi) {
+                zoneMelodi.onclick = (e) => {
+                    if (selectedTouchItem && !e.target.classList.contains('draggable-item')) {
+                        dropItem(e, 'MELODI');
+                    }
+                }
+            }
+        });
+
+        function checkDragGameResult() {
+            const iramaList = document.querySelectorAll('#zone-irama .draggable-item');
+            const melodiList = document.querySelectorAll('#zone-melodi .draggable-item');
+            const poolList = document.querySelectorAll('#drag-items-pool .draggable-item');
+
+            const feedback = document.getElementById('drag-game-feedback');
+            feedback.classList.remove('hidden');
+
+            if (poolList.length > 0) {
+                feedback.className = "p-4 rounded-xl text-center font-poppins font-bold text-sm bg-yellow-500/20 text-yellow-300 border border-yellow-500/40";
+                feedback.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i> Masih ada istilah yang belum dimasukkan ke dalam kategori!`;
+                return;
+            }
+
+            let correctCount = 0;
+
+            iramaList.forEach(item => {
+                if (item.dataset.category === 'IRAMA') correctCount++;
+            });
+
+            melodiList.forEach(item => {
+                if (item.dataset.category === 'MELODI') correctCount++;
+            });
+
+            if (correctCount === dragItemsData.length) {
+                feedback.className = "p-4 rounded-xl text-center font-poppins font-bold text-sm bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+                feedback.innerHTML = `<i class="fa-solid fa-circle-check text-xl mr-1"></i> Sempurna! Semua (${correctCount}/${dragItemsData.length}) istilah dikelompokkan dengan benar!`;
+                playSynthTone('C5');
+            } else {
+                feedback.className = "p-4 rounded-xl text-center font-poppins font-bold text-sm bg-red-500/20 text-red-300 border border-red-500/40";
+                feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Kamu berhasil mengelompokkan ${correctCount} dari ${dragItemsData.length} istilah dengan tepat. Coba tekan "Reset Game" untuk mencoba lagi!`;
+                playSynthTone('C4');
+            }
+        }
+
+        function resetDragGame() {
+            initDragGame();
+        }
+
+
+        // -------------------------------------------------------------
+        // APPLICATION INITIALIZATION ON WINDOW LOAD
+        // -------------------------------------------------------------
+        window.onload = function() {
+            loadQuestion();
+            initDragGame();
+            console.log("Media Pembelajaran Interaktif Musik SMP loaded successfully!");
+        };
+    </script>
+</body>
+</html>
